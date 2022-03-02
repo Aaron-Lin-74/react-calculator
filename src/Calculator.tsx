@@ -3,15 +3,32 @@ import './Calculator.css';
 import DigitButton from './DigitButton';
 import OperatorButton from './OperatorButton';
 
-export const ACTIONS = {
-  Add_digit: 'ADD_DIGIT',
-  Add_operator: 'ADD_OPERATOR',
-  Evaluate: 'EVALUATE',
-  Clear: 'CLEAR',
-  Delete: 'DELETE',
-};
+export enum ACTIONS {
+  Add_digit = 'ADD_DIGIT',
+  Add_operator = 'ADD_OPERATOR',
+  Evaluate = 'EVALUATE',
+  Clear = 'CLEAR',
+  Delete = 'DELETE',
+}
 
-const initialState = {
+interface CalculatorState {
+  evaluated: boolean;
+  currentOperand: string | null;
+  previousOperand: string | null;
+  operator: string | null;
+}
+
+export type Action =
+  | {
+      type: ACTIONS.Add_digit;
+      payload: {
+        digit: string;
+      };
+    }
+  | { type: ACTIONS.Add_operator; payload: { operator: string } }
+  | { type: ACTIONS.Clear | ACTIONS.Delete | ACTIONS.Evaluate };
+
+const initialState: CalculatorState = {
   evaluated: false,
   currentOperand: null,
   previousOperand: null,
@@ -20,14 +37,20 @@ const initialState = {
 
 /**
  * Evaluate the result based on operands and operator passed in state.
- * @param param0 - State object with currentOperand, previousOperand, and operator property
+ * @param param0 - State object with currentOperand, previousOperand, and operator properties
  * @returns The result of the calculation.
  */
-const evaluate = ({ currentOperand, previousOperand, operator }) => {
-  let prev = parseFloat(previousOperand);
-  let current = parseFloat(currentOperand);
-  let computation;
-  if (isNaN(prev) || isNaN(current)) return '';
+const evaluate = ({
+  currentOperand,
+  previousOperand,
+  operator,
+}: CalculatorState): string => {
+  // Add a type guard in case they are null.
+  if (previousOperand == null || currentOperand == null || operator == null)
+    return '';
+  let prev: number = parseFloat(previousOperand);
+  let current: number = parseFloat(currentOperand);
+  let computation: number;
   switch (operator) {
     case '+':
       computation = prev + current;
@@ -42,21 +65,19 @@ const evaluate = ({ currentOperand, previousOperand, operator }) => {
       computation = prev / current;
       break;
     default:
-      computation = '';
-      break;
+      return '';
   }
   return computation.toString();
 };
 
-const calReducer = (state, action) => {
-  const { type, payload } = action;
-  switch (type) {
+const calReducer = (state: CalculatorState, action: Action) => {
+  switch (action.type) {
     case ACTIONS.Add_digit:
       // When press digit button right after last evaluation =. Reset state
       if (state.evaluated) {
         return {
           ...state,
-          currentOperand: payload.digit,
+          currentOperand: action.payload.digit,
           evaluated: false,
           previousOperand: null,
           operator: null,
@@ -64,21 +85,22 @@ const calReducer = (state, action) => {
       }
 
       // Prevent two zeros
-      if (payload.digit === '0' && state.currentOperand === '0') return state;
+      if (action.payload.digit === '0' && state.currentOperand === '0')
+        return state;
 
       // Replace 0 with the digit clicked.
-      if (payload.digit !== '.' && state.currentOperand === '0') {
-        return { ...state, currentOperand: payload.digit };
+      if (action.payload.digit !== '.' && state.currentOperand === '0') {
+        return { ...state, currentOperand: action.payload.digit };
       }
 
       // Prevent multiple decimal dots
-      if (payload.digit === '.' && state.currentOperand?.includes('.'))
+      if (action.payload.digit === '.' && state.currentOperand?.includes('.'))
         return state;
 
       // Default behavior, append the digit to current operand.
       return {
         ...state,
-        currentOperand: `${state.currentOperand || ''}${payload.digit}`,
+        currentOperand: `${state.currentOperand || ''}${action.payload.digit}`,
       };
     case ACTIONS.Add_operator:
       // Prevent adding operators before entering the numbers.
@@ -90,7 +112,7 @@ const calReducer = (state, action) => {
       if (state.currentOperand == null) {
         return {
           ...state,
-          operator: payload.operator,
+          operator: action.payload.operator,
         };
       }
 
@@ -99,7 +121,7 @@ const calReducer = (state, action) => {
         return {
           ...state,
           previousOperand: state.currentOperand,
-          operator: payload.operator,
+          operator: action.payload.operator,
           currentOperand: null,
         };
       }
@@ -109,7 +131,7 @@ const calReducer = (state, action) => {
         ...state,
         previousOperand: evaluate(state),
         currentOperand: null,
-        operator: payload.operator,
+        operator: action.payload.operator,
       };
     case ACTIONS.Clear:
       // Reset every thing

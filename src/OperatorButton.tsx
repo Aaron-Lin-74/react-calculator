@@ -1,7 +1,13 @@
 import React from 'react';
-import { ACTIONS } from './Calculator';
+import { Action, ACTIONS } from './Calculator';
 
-function OperatorButton({ dispatch, operator }) {
+function OperatorButton({
+  dispatch,
+  operator,
+}: {
+  dispatch: React.Dispatch<Action>;
+  operator: string;
+}) {
   return (
     <button
       onClick={() =>
