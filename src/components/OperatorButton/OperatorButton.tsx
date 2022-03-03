@@ -1,5 +1,5 @@
 import React from 'react';
-import { Action, ACTIONS } from './Calculator';
+import { Action, ACTIONS } from '../Calculator/Calculator';
 
 function OperatorButton({
   dispatch,

@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react';
 import './Calculator.css';
-import DigitButton from './DigitButton';
-import OperatorButton from './OperatorButton';
+import DigitButton from '../DigitButton/DigitButton';
+import OperatorButton from '../OperatorButton/OperatorButton';
 
 export enum ACTIONS {
   Add_digit = 'ADD_DIGIT',
