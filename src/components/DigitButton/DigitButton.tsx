@@ -1,7 +1,12 @@
 import React from 'react';
-import { ACTIONS } from './Calculator';
+import { Action, ACTIONS } from '../Calculator/Calculator';
 
-function DigitButton({ dispatch, digit }) {
+interface PropsType {
+  dispatch: React.Dispatch<Action>;
+  digit: string;
+}
+
+function DigitButton({ dispatch, digit }: PropsType) {
   return (
     <button
       onClick={() => dispatch({ type: ACTIONS.Add_digit, payload: { digit } })}
